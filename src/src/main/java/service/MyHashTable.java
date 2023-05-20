@@ -1,6 +1,7 @@
 package service;
 
 public class MyHashTable<K, V> {
+    float loadFactor = 0.75f;
     private class HashNode<K,V>{
         private K key;
         private V value;
@@ -16,7 +17,8 @@ public class MyHashTable<K, V> {
     }
     private HashNode<K, V>[] chainArray;
     private int M = 11;
-    private int size;
+    private int size = 0;
+    int capacity = 50;
     public MyHashTable(){
         this.chainArray = new HashNode[M];
     }
@@ -30,7 +32,7 @@ public class MyHashTable<K, V> {
         return index;
     }
     public void put(K key, V value){
-        int index = hash(key);
+        int index = hash(key) & (capacity-1);
         HashNode<K,V> node = chainArray[index];
         while (node != null) {
             if (node.key.equals(key)) {
@@ -43,7 +45,30 @@ public class MyHashTable<K, V> {
         node.next = chainArray[index];
         chainArray[index] = node;
         size++;
+        if (size > capacity * loadFactor) {
+            resize(capacity * 2);
+        }
     }
+    public void getSize() {
+        System.out.println("size = " + size);
+    }
+
+    public void resize(int newCapacity) {
+        int temp = capacity;
+        HashNode[] newChain = new HashNode[newCapacity];
+        capacity = newCapacity;
+        for (int i = 0; i < temp; i++) {
+            HashNode node = chainArray[i];
+            while (node != null) {
+                int newIndex = hash((K) node.key);
+                node.next = newChain[newIndex];
+                newChain[newIndex] = node;
+                node = node.next;
+            }
+        }
+        chainArray = newChain;
+    }
+
     public V get(K key){
         int index = hash(key);
         HashNode<K,V> node = chainArray[index];
